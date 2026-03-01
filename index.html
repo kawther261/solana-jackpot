@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOL Jackpot - Simple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pot {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffeb3b;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 1.5rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wallet-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+        
+        .wallet-connected {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 2px solid #4caf50;
+        }
+        
+        .winner-announcement {
+            background: rgba(255, 193, 7, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border: 2px solid #ffc107;
+            display: none;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .visible {
+            display: block;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎰 SOL JACKPOT</h1>
+
+        <div class="pot" id="potAmount">0.0 SOL</div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="playerCount">0</div>
+                <div class="stat-label">Players</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="roundNumber">1</div>
+                <div class="stat-label">Round</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0.1</div>
+                <div class="stat-label">Entry Fee</div>
+            </div>
+        </div>
+
+        <div id="walletSection">
+            <button class="wallet-btn" onclick="connectWallet()">
+                🔗 Connect Wallet
+            </button>
+        </div>
+
+        <div id="connectedSection" class="hidden">
+            <div class="wallet-connected">
+                <div>✅ Wallet Connected</div>
+                <div id="walletAddress" style="font-size: 0.9rem; opacity: 0.8;"></div>
+            </div>
+
+            <button onclick="enterJackpot()">
+                🎯 Enter Jackpot (0.1 SOL)
+            </button>
+        </div>
+
+        <div id="winnerSection" class="winner-announcement">
+            <h3>🎉 WINNER!</h3>
+            <div id="winnerWallet"></div>
+            <div id="winnerPot"></div>
+        </div>
+
+        <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.8;">
+            <p>🔒 Transparent • ⚡ Fast • 🎲 Fair</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Socket connection
+        const socket = io();
+
+        // Game state
+        let isWalletConnected = false;
+        let currentWallet = null;
+
+        // Connect wallet (simplified)
+        function connectWallet() {
+            // Simulate wallet connection
+            const mockWallet = generateMockWallet();
+            currentWallet = mockWallet;
+            isWalletConnected = true;
+
+            // Update UI
+            document.getElementById('walletSection').classList.add('hidden');
+            document.getElementById('connectedSection').classList.remove('hidden');
+            document.getElementById('walletAddress').textContent = mockWallet;
+        }
+
+        // Enter jackpot
+        async function enterJackpot() {
+            if (!isWalletConnected) {
+                alert('Please connect your wallet first!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/enter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        wallet: currentWallet,
+                        signature: 'mock-signature-' + Date.now()
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Successfully entered the jackpot!');
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Connection error');
+            }
+        }
+
+        // Generate mock wallet address
+        function generateMockWallet() {
+            const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result + '...' + chars.substr(0, 4);
+        }
+
+        // Socket event listeners
+        socket.on('gameUpdate', (data) => {
+            document.getElementById('potAmount').textContent = data.pot.toFixed(1) + ' SOL';
+            document.getElementById('playerCount').textContent = data.playerCount;
+            if (data.round) {
+                document.getElementById('roundNumber').textContent = data.round;
+            }
+
+            // Add pulse animation
+            document.getElementById('potAmount').classList.add('pulse');
+            setTimeout(() => {
+                document.getElementById('potAmount').classList.remove('pulse');
+            }, 2000);
+        });
+
+        socket.on('winner', (data) => {
+            document.getElementById('winnerWallet').textContent = data.winner;
+            document.getElementById('winnerPot').textContent = `Won: ${data.pot.toFixed(1)} SOL`;
+            document.getElementById('winnerSection').classList.add('visible');
+        });
+
+        socket.on('newRound', (data) => {
+            document.getElementById('roundNumber').textContent = data.round;
+            document.getElementById('winnerSection').classList.remove('visible');
+            document.getElementById('potAmount').textContent = '0.0 SOL';
+            document.getElementById('playerCount').textContent = '0';
+        });
+
+        // Load initial game state
+        fetch('/api/game')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('potAmount').textContent = data.pot.toFixed(1) + ' SOL';
+                document.getElementById('playerCount').textContent = data.playerCount;
+                document.getElementById('roundNumber').textContent = data.round;
+
+                if (data.winner) {
+                    document.getElementById('winnerWallet').textContent = data.winner.wallet;
+                    document.getElementById('winnerPot').textContent = `Won: ${data.pot.toFixed(1)} SOL`;
+                    document.getElementById('winnerSection').classList.add('visible');
+                }
+            });
+    </script>
+</body>
+
+</html>

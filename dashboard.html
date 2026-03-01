@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 Solana Jackpot - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+         :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --dark-light: #334155;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 440px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+        
+        .security-notice {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        
+        .credentials-hint {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+        
+        .credentials-hint strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+            background: var(--light);
+        }
+        
+        .dashboard-container.active {
+            display: block;
+        }
+        
+        .dashboard-header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .status-online {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .dashboard-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .control-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .control-panel h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover:not(:disabled) {
+            background: #d97706;
+        }
+        
+        .players-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+        
+        .players-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .players-table th,
+        .players-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .players-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .winner-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            .dashboard-nav {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            .players-table {
+                font-size: 0.9rem;
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .auto-round-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--secondary);
+            text-align: center;
+        }
+        
+        .auto-round-info strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🎰 Admin Dashboard</h1>
+                <p>Secure access to Solana Jackpot management</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Enter admin username" required maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Enter admin password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In Securely
+                </button>
+            </form>
+            <div class="credentials-hint">
+                <strong>Demo Credentials:</strong> Username: <code>admin</code><br> Password: <code>jackpot2024</code>
+            </div>
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i> All login attempts are monitored and logged for security purposes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardPage" class="dashboard-container">
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-tachometer-alt"></i> Solana Jackpot Admin
+            </h1>
+            <div class="dashboard-nav">
+                <div id="gameStatus" class="status-badge status-online">
+                    <i class="fas fa-circle pulse"></i> <span>Online</span>
+                </div>
+                <button id="logoutBtn" class="btn btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+        <main class="dashboard-content">
+            <!-- Alerts -->
+            <div id="alerts"></div>
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPot">0.0 SOL</div>
+                    <div class="stat-label">Total Pot</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="playersCount">0</div>
+                    <div class="stat-label">Active Players</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="roundNumber">1</div>
+                    <div class="stat-label">Current Round</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="timeLeft">4:00:00</div>
+                    <div class="stat-label">Next Round In</div>
+                </div>
+            </div>
+            <!-- Game Controls -->
+            <div class="control-panel">
+                <h3>
+                    <i class="fas fa-gamepad"></i> Game Controls
+                </h3>
+                <div class="auto-round-info">
+                    <strong>Auto-Round System Active</strong> Rounds run automatically every 4 hours. Players have 4 minutes to join each round.
+                </div>
+                <div class="controls-grid">
+                    <button id="startRoundBtn" class="btn btn-success">
+                        <i class="fas fa-play"></i> Start New Round
+                    </button>
+                    <button id="endRoundBtn" class="btn btn-warning" disabled>
+                        <i class="fas fa-stop"></i> End Current Round
+                    </button>
+                    <button id="refreshBtn" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                    <button id="selectWinnerBtn" class="btn btn-success" disabled>
+                        <i class="fas fa-trophy"></i> Select Winner
+                    </button>
+                </div>
+            </div>
+            <!-- Players List -->
+            <div class="players-section">
+                <div class="players-header">
+                    <h3>
+                        <i class="fas fa-users"></i> Current Round Players
+                    </h3>
+                    <span id="playersTotal">0 players</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="players-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Wallet</th>
+                                <th>Amount</th>
+                                <th>Chance</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playersTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                                    Loading players...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.isLoggedIn = false;
+                this.gameState = {
+                    totalPot: 0,
+                    playersCount: 0,
+                    roundNumber: 1,
+                    timeLeft: 14400, // 4 hours in seconds
+                    isActive: false,
+                    winner: null,
+                    entryFee: 0.1,
+                    maxPlayers: 50,
+                    autoRound: true,
+                    roundDuration: 240, // 4 minutes for active round
+                    nextRoundIn: 14400 // 4 hours until next round
+                };
+                this.players = [];
+                this.timer = null;
+                this.alertTimeout = null;
+                this.dataRefreshInterval = null;
+                this.socket = io({
+                    auth: {
+                        token: null
+                    }
+                });
+                this.init();
+            }
+
+            async init() {
+                this.bindEvents();
+                await this.checkLoginStatus();
+                this.setupSocket();
+            }
+
+            bindEvents() {
+                document.getElementById('loginForm').addEventListener('submit', async(e) => {
+                    e.preventDefault();
+                    await this.handleSignIn();
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', async() => {
+                    await this.logout();
+                });
+
+                document.getElementById('startRoundBtn').addEventListener('click', async() => {
+                    await this.startRound();
+                });
+
+                document.getElementById('endRoundBtn').addEventListener('click', async() => {
+                    await this.endRound();
+                });
+
+                document.getElementById('refreshBtn').addEventListener('click', async() => {
+                    await this.refreshData();
+                });
+
+                document.getElementById('selectWinnerBtn').addEventListener('click', async() => {
+                    await this.selectRandomWinner();
+                });
+            }
+
+            async checkLoginStatus() {
+                try {
+                    const response = await fetch('/api/check-auth', {
+                        credentials: 'include'
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const {
+                        isAuthenticated
+                    } = await response.json();
+                    if (isAuthenticated) {
+                        this.isLoggedIn = true;
+                        this.showDashboard();
+                    }
+                } catch (error) {
+                    console.error('Check auth error:', error);
+                    this.showAlert('Failed to check authentication status', 'danger');
+                }
+            }
+
+            async handleSignIn() {
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const submitBtn = document.querySelector('#loginForm button');
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            username,
+                            password
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        this.isLoggedIn = true;
+                        this.socket.io.opts.auth.token = data.socketToken;
+                        this.socket.disconnect().connect();
+                        this.showDashboard();
+                        this.showAlert('Sign-in successful!', 'success');
+                        document.getElementById('username').value = '';
+                        document.getElementById('password').value = '';
+                    } else {
+                        throw new Error(data.error || 'Invalid credentials');
+                    }
+                } catch (error) {
+                    console.error('Sign-in error:', error);
+                    this.showAlert(`Sign-in failed: ${error.message}`, 'danger');
+                } finally {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In Securely';
+                }
+            }
+
+            async logout() {
+                try {
+                    const response = await fetch('/api/logout', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        this.isLoggedIn = false;
+                        this.socket.io.opts.auth.token = null;
+                        this.socket.disconnect().connect();
+                        this.showLogin();
+                        this.clearTimers();
+                        this.showAlert('Logged out successfully', 'success');
+                    } else {
+                        throw new Error('Logout failed');
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    this.showAlert('Failed to log out', 'danger');
+                }
+            }
+
+            showLogin() {
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('dashboardPage').classList.remove('active');
+            }
+
+            async showDashboard() {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboardPage').classList.add('active');
+                await this.refreshData();
+                this.startTimer();
+                this.startDataRefresh();
+            }
+
+            setupSocket() {
+                this.socket.on('connect', () => {
+                    console.log('Connected to server');
+                    this.updateGameStatus('online');
+                });
+
+                this.socket.on('disconnect', () => {
+                    console.log('Disconnected from server');
+                    this.updateGameStatus('offline');
+                });
+
+                this.socket.on('gameUpdate', (data) => {
+                    this.updateGameState(data);
+                    this.showAlert('Game state updated', 'success');
+                });
+
+                this.socket.on('playersUpdate', (data) => {
+                    this.updatePlayersList(data.players);
+                    this.gameState.totalPot = data.totalPot || 0;
+                    this.gameState.playersCount = (data.players && data.players.length) || 0;
+
+                    this.updateStats();
+                });
+
+                this.socket.on('roundStarted', (data) => {
+                    this.gameState.isActive = true;
+                    this.gameState.roundNumber = data.roundNumber;
+                    this.gameState.timeLeft = data.duration;
+                    this.updateGameState(this.gameState);
+                    this.showAlert(`Round ${data.roundNumber} started!`, 'success');
+                });
+
+                this.socket.on('roundEnded', (data) => {
+                    this.gameState.isActive = false;
+                    this.gameState.winner = data.winner;
+                    this.gameState.timeLeft = data.nextRoundIn;
+                    this.updateGameState(this.gameState);
+                    this.showAlert(`Round ended! Winner: ${data.winner?.name || 'No winner'}`, 'success');
+                });
+
+                this.socket.on('winnerSelected', (winner) => {
+                    this.gameState.winner = winner;
+                    this.updateGameState(this.gameState);
+                    this.showAlert(`Winner: ${winner.name} won ${winner.amount.toFixed(4)} SOL!`, 'success');
+                });
+
+                this.socket.on('error', (error) => {
+                    this.showAlert(`Server error: ${error.message}`, 'danger');
+                });
+            }
+
+            updateGameStatus(status) {
+                const statusElement = document.getElementById('gameStatus');
+                statusElement.className = `status-badge ${status === 'online' ? 'status-online' : 'status-offline'}`;
+                statusElement.innerHTML = `<i class="fas fa-circle ${status === 'online' ? 'pulse' : ''}"></i> <span>${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+            }
+
+            startTimer() {
+                this.clearTimers();
+                this.timer = setInterval(() => {
+                    if (this.gameState.timeLeft > 0) {
+                        this.gameState.timeLeft--;
+                        this.updateTimeDisplay();
+                        if (this.gameState.timeLeft === 0 && this.gameState.isActive) {
+                            this.endRound();
+                        }
+                    }
+                }, 1000);
+            }
+
+            startDataRefresh() {
+                this.dataRefreshInterval = setInterval(() => {
+                    this.refreshData(true); // Silent refresh
+                }, 10000);
+            }
+
+            clearTimers() {
+                if (this.timer) clearInterval(this.timer);
+                if (this.dataRefreshInterval) clearInterval(this.dataRefreshInterval);
+                if (this.alertTimeout) clearTimeout(this.alertTimeout);
+                this.timer = null;
+                this.dataRefreshInterval = null;
+                this.alertTimeout = null;
+            }
+
+            updateTimeDisplay() {
+                const hours = Math.floor(this.gameState.timeLeft / 3600);
+                const minutes = Math.floor((this.gameState.timeLeft % 3600) / 60);
+                const seconds = this.gameState.timeLeft % 60;
+                document.getElementById('timeLeft').textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const label = document.querySelector('#timeLeft').parentElement.querySelector('.stat-label');
+                label.textContent = this.gameState.isActive ? 'Round Ends In' : 'Next Round In';
+            }
+
+            async refreshData(silent = false) {
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (!silent) {
+                    refreshBtn.classList.add('loading');
+                    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                }
+
+                try {
+                    const [gameStateRes, playersRes] = await Promise.all([
+                        fetch('/api/game-state', {
+                            credentials: 'include'
+                        }),
+                        fetch(`/api/rounds/${this.gameState.roundNumber}/players`, {
+                            credentials: 'include'
+                        })
+                    ]);
+
+                    if (!gameStateRes.ok) throw new Error(`Game state fetch failed: ${gameStateRes.status}`);
+                    if (!playersRes.ok && playersRes.status !== 404) throw new Error(`Players fetch failed: ${playersRes.status}`);
+
+                    const gameState = await gameStateRes.json();
+                    const playersData = playersRes.ok ? await playersRes.json() : {
+                        players: [],
+                        totalPot: 0
+                    };
+
+                    this.updateGameState(gameState);
+                    this.updatePlayersList(playersData.players);
+                    this.gameState.totalPot = playersData.totalPot || 0;
+                    this.gameState.playersCount = playersData.players.length;
+                    this.updateStats();
+
+                    if (!silent) this.showAlert('Data refreshed successfully', 'success');
+                } catch (error) {
+                    console.error('Refresh error:', error);
+                    if (!silent) this.showAlert(`Failed to refresh data: ${error.message}`, 'danger');
+                } finally {
+                    if (!silent) {
+                        refreshBtn.classList.remove('loading');
+                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
+                    }
+                }
+            }
+
+            updateStats() {
+                document.getElementById('totalPot').textContent = `${this.gameState.totalPot.toFixed(2)} SOL`;
+                document.getElementById('playersCount').textContent = this.gameState.playersCount;
+                document.getElementById('roundNumber').textContent = this.gameState.roundNumber;
+                document.getElementById('playersTotal').textContent = `${this.gameState.playersCount} player${this.gameState.playersCount !== 1 ? 's' : ''}`;
+                this.updateTimeDisplay();
+            }
+
+            updateGameState(state) {
+                this.gameState = {
+                    ...this.gameState,
+                    ...state
+                };
+                this.updateStats();
+
+                const startBtn = document.getElementById('startRoundBtn');
+                const endBtn = document.getElementById('endRoundBtn');
+                const selectWinnerBtn = document.getElementById('selectWinnerBtn');
+
+                startBtn.disabled = this.gameState.isActive;
+                endBtn.disabled = !this.gameState.isActive;
+                selectWinnerBtn.disabled = !this.gameState.isActive || this.gameState.playersCount === 0;
+            }
+
+            updatePlayersList(players) {
+                this.players = players || [];
+                const tableBody = document.getElementById('playersTableBody');
+
+                if (this.players.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                                No players in current round
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tableBody.innerHTML = this.players.map(player => {
+                    const isWinner = this.gameState.winner && this.gameState.winner.wallet === player.wallet;
+                    const chance = (player.amount / this.gameState.totalPot * 100).toFixed(2);
+
+                    return `
+                        <tr>
+                            <td>${player.name || 'Anonymous'}</td>
+                            <td>${player.wallet.substring(0, 4)}...${player.wallet.substring(player.wallet.length - 4)}</td>
+                            <td>${player.amount.toFixed(2)} SOL</td>
+                            <td>${chance}%</td>
+                            <td>${new Date(player.timestamp).toLocaleTimeString()}</td>
+                            <td>${isWinner ? '<span class="winner-badge">Winner</span>' : 'Playing'}</td>
+                            <td>
+                                <button class="btn btn-danger" data-wallet="${player.wallet}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                                    <i class="fas fa-ban"></i> Ban
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                // Add event listeners to ban buttons
+                document.querySelectorAll('[data-wallet]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const wallet = e.currentTarget.getAttribute('data-wallet');
+                        this.banPlayer(wallet);
+                    });
+                });
+            }
+
+            async startRound() {
+                const btn = document.getElementById('startRoundBtn');
+                btn.classList.add('loading');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+
+                try {
+                    const response = await fetch('/api/rounds/start', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.gameState.isActive = true;
+                        this.gameState.timeLeft = data.duration;
+                        this.updateGameState(this.gameState);
+                        this.showAlert('New round started successfully!', 'success');
+                    } else {
+                        throw new Error(data.error || 'Failed to start round');
+                    }
+                } catch (error) {
+                    console.error('Start round error:', error);
+                    this.showAlert(`Failed to start round: ${error.message}`, 'danger');
+                } finally {
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '<i class="fas fa-play"></i> Start New Round';
+                }
+            }
+
+            async endRound() {
+                const btn = document.getElementById('endRoundBtn');
+                btn.classList.add('loading');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ending...';
+
+                try {
+                    const response = await fetch('/api/rounds/end', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.gameState.isActive = false;
+                        this.gameState.timeLeft = data.nextRoundIn;
+                        this.updateGameState(this.gameState);
+                        this.showAlert('Round ended successfully!', 'success');
+                    } else {
+                        throw new Error(data.error || 'Failed to end round');
+                    }
+                } catch (error) {
+                    console.error('End round error:', error);
+                    this.showAlert(`Failed to end round: ${error.message}`, 'danger');
+                } finally {
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '<i class="fas fa-stop"></i> End Current Round';
+                }
+            }
+
+            async selectRandomWinner() {
+                const btn = document.getElementById('selectWinnerBtn');
+                btn.classList.add('loading');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Selecting...';
+
+                try {
+                    const response = await fetch('/api/rounds/select-winner', {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.gameState.winner = data.winner;
+                        this.updateGameState(this.gameState);
+                        this.showAlert(`Winner selected: ${data.winner.name} won ${data.winner.amount.toFixed(2)} SOL!`, 'success');
+                    } else {
+                        throw new Error(data.error || 'Failed to select winner');
+                    }
+                } catch (error) {
+                    console.error('Select winner error:', error);
+                    this.showAlert(`Failed to select winner: ${error.message}`, 'danger');
+                } finally {
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '<i class="fas fa-trophy"></i> Select Winner';
+                }
+            }
+
+            async banPlayer(wallet) {
+                if (!confirm(`Are you sure you want to ban this player? They will be refunded their entry fee.`)) return;
+
+                try {
+                    const response = await fetch('/api/players/ban', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            wallet
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showAlert('Player banned successfully', 'success');
+                        await this.refreshData();
+                    } else {
+                        throw new Error(data.error || 'Failed to ban player');
+                    }
+                } catch (error) {
+                    console.error('Ban player error:', error);
+                    this.showAlert(`Failed to ban player: ${error.message}`, 'danger');
+                }
+            }
+
+            showAlert(message, type) {
+                const alertsContainer = document.getElementById('alerts');
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                alert.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+                `;
+
+                alertsContainer.prepend(alert);
+
+                if (this.alertTimeout) clearTimeout(this.alertTimeout);
+                this.alertTimeout = setTimeout(() => {
+                    alert.remove();
+                }, 5000);
+            }
+        }
+
+        // Initialize the dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminDashboard();
+        });
+    </script>
+</body>
+
+</html>
